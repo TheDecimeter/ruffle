@@ -184,7 +184,7 @@ impl ActivePlayer {
             .and_then(|segments| segments.last())
             .unwrap_or_else(|| movie_url.as_str())
             .to_string();
-            
+
         let decoded_name = decode(&name).expect("UTF-8");
 
         window.set_title(&format!("Ruffle - {decoded_name}"));
