@@ -24,6 +24,7 @@ use std::rc::Rc;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 use url::Url;
+use urlencoding::decode;
 use winit::event_loop::EventLoopProxy;
 use winit::window::Window;
 
@@ -183,8 +184,10 @@ impl ActivePlayer {
             .and_then(|segments| segments.last())
             .unwrap_or_else(|| movie_url.as_str())
             .to_string();
+            
+        let decoded_name = decode(&name).expect("UTF-8");
 
-        window.set_title(&format!("Ruffle - {name}"));
+        window.set_title(&format!("Ruffle - {decoded_name}"));
 
         SWF_INFO.with(|i| *i.borrow_mut() = Some(name.clone()));
 
