@@ -185,9 +185,9 @@ impl ActivePlayer {
             .unwrap_or_else(|| movie_url.as_str())
             .to_string();
 
-        let decoded_name = decode(&name).expect("UTF-8");
+        let readable_name = decode(&name).expect("UTF-8");
 
-        window.set_title(&format!("Ruffle - {decoded_name}"));
+        window.set_title(&format!("Ruffle - {readable_name}"));
 
         SWF_INFO.with(|i| *i.borrow_mut() = Some(name.clone()));
 
