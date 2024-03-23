@@ -384,6 +384,48 @@ impl Ruffle {
         Ok(())
     }
 
+
+    fn filter_out_projector_bundle(buffer: &mut Vec<u8>){
+        
+        let len  = buffer.len();
+        let signature = u32::from_le_bytes(buffer[len-8..len-4].try_into().expect("4 bytes make a u32"));
+        println!("len {:?}", len);
+        
+        if signature == 0xFA123456 { 
+            println!("good flag  {:?}", signature);
+        }
+        else{
+            println!("bad flag  {:?}", signature);
+            return;
+        }
+        
+    
+        let size32 = u32::from_le_bytes(buffer[len-4..len].try_into().expect("4 bytes make a u32"));
+        let swf_size = usize::try_from(size32).expect("a u64 should hold a u32");
+    
+        if swf_size > len -8{
+            println!("bad swf size found {:?}", swf_size);
+            return;
+        }
+    
+    
+        println!("swf size {:?}", swf_size);
+        let offset = len - swf_size - 8;
+        println!("offset{:?}", offset);
+    
+    
+        let mut i = 0;
+    
+        while i < swf_size {
+            buffer[i] = buffer[i+offset];
+            i = i + 1;
+        }
+    
+        buffer.resize(swf_size, 0);
+    }
+
+
+
     /// Play an arbitrary movie on this instance.
     ///
     /// This method should only be called once per player.
@@ -393,6 +435,9 @@ impl Ruffle {
         parameters: JsValue,
         swf_name: String,
     ) -> Result<(), JsValue> {
+        tracing::warn!("danx web lib.rs load_data");
+        tracing::info!("danx info web lib.rs load_data");
+        println!("danx print web lib.rs load_data");
         let window = web_sys::window().ok_or("Expected window")?;
         let mut url = Url::from_str(&window.location().href()?)
             .map_err(|e| format!("Error creating url: {e}"))?;
@@ -403,8 +448,12 @@ impl Ruffle {
             segments.push(&swf_name);
         }
 
+        let mut swf_vec = swf_data.to_vec();
+        Self::filter_out_projector_bundle(&mut swf_vec);
+
+
         let mut movie =
-            SwfMovie::from_data(&swf_data.to_vec(), url.to_string(), None).map_err(|e| {
+            SwfMovie::from_data(&swf_vec, url.to_string(), None).map_err(|e| {
                 let _ = self.with_core_mut(|core| {
                     core.ui_mut()
                         .display_root_movie_download_failed_message(true);
