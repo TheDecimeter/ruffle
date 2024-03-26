@@ -384,8 +384,6 @@ impl Ruffle {
         Ok(())
     }
 
-
-
     /// Play an arbitrary movie on this instance.
     ///
     /// This method should only be called once per player.
@@ -407,7 +405,6 @@ impl Ruffle {
             segments.pop();
             segments.push(&swf_name);
         }
-
 
         let mut movie =
             SwfMovie::from_data(&swf_data.to_vec(), url.to_string(), None).map_err(|e| {

@@ -890,8 +890,6 @@ impl<'gc> Loader<'gc> {
         }
     }
 
-
-
     /// Construct a future for the root movie loader.
     fn root_movie_loader(
         &mut self,
@@ -932,9 +930,6 @@ impl<'gc> Loader<'gc> {
                 error
             })?;
             tracing::info!("danx root_movie_loader body.len {}", body.len());
-
-
-            
 
             // The spoofed root movie URL takes precedence over the actual URL.
             let swf_url = player
