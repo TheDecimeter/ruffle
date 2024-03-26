@@ -179,7 +179,7 @@ impl SwfMovie {
             swf_data.push(data[i + offset]);
         }
 
-        return Some(swf_data);
+        Some(swf_data)
     }
 
     /// Construct a movie based on the contents of the SWF datastream.
@@ -188,9 +188,8 @@ impl SwfMovie {
         url: String,
         loader_url: Option<String>,
     ) -> Result<Self, Error> {
-        let extracted_swf = Self::filter_from_projector_bundle(swf_data);
-        match extracted_swf {
-            Some(swf) => Self::from_swf_data(&swf, url, loader_url),
+        match Self::filter_from_projector_bundle(swf_data) {
+            Some(extracted_swf) => Self::from_swf_data(&extracted_swf, url, loader_url),
             None => Self::from_swf_data(swf_data, url, loader_url),
         }
     }

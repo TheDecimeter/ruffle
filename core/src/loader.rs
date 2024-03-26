@@ -921,7 +921,7 @@ impl<'gc> Loader<'gc> {
                 error.error
             })?;
             let url = response.url().into_owned();
-            let mut body = response.body().await.map_err(|error| {
+            let body = response.body().await.map_err(|error| {
                 player
                     .lock()
                     .unwrap()
