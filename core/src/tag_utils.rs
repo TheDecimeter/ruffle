@@ -151,12 +151,65 @@ impl SwfMovie {
         Self::from_data(&data, url.into(), loader_url)
     }
 
+    fn filter_out_projector_bundle(data: &[u8]) -> Option<Vec<u8>>{
+        
+        let len  = data.len();
+        let signature = u32::from_le_bytes(data[len-8..len-4].try_into().expect("4 bytes make a u32"));
+        println!("len {:?}", len);
+        
+        if signature == 0xFA123456 { 
+            println!("good flag  {:?}", signature);
+        }
+        else{
+            println!("bad flag  {:?}", signature);
+            return None;
+        }
+        
+    
+        let size32 = u32::from_le_bytes(data[len-4..len].try_into().expect("4 bytes make a u32"));
+        let swf_size = usize::try_from(size32).expect("a u64 should hold a u32");
+    
+        if swf_size > len -8{
+            println!("bad swf size found {:?}", swf_size);
+            return None;
+        }
+    
+    
+        println!("swf size {:?}", swf_size);
+        let offset = len - swf_size - 8;
+        println!("offset{:?}", offset);
+    
+    
+        let mut v = Vec::with_capacity(swf_size);
+    
+        for i in 0..swf_size {
+            v.push(data[i+offset]);
+        }
+    
+        return Some(v);
+    }
+
     /// Construct a movie based on the contents of the SWF datastream.
     pub fn from_data(
         swf_data: &[u8],
         url: String,
         loader_url: Option<String>,
     ) -> Result<Self, Error> {
+        
+        let result = Self::filter_out_projector_bundle(swf_data);
+        match result {
+            Some(v) => Self::from_data_work(&v, url, loader_url),
+            None    =>  Self::from_data_work(swf_data, url, loader_url)
+        }
+    }
+
+    fn from_data_work(
+        swf_data: &[u8],
+        url: String,
+        loader_url: Option<String>,
+    ) -> Result<Self, Error> {
+        tracing::info!("danx from_data swf_data.len {}", swf_data.len());
+
         let compressed_len = swf_data.len();
         let swf_buf = swf::read::decompress_swf(swf_data)?;
         let encoding = swf::SwfStr::encoding_for_version(swf_buf.header.version());

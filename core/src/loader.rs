@@ -891,45 +891,6 @@ impl<'gc> Loader<'gc> {
     }
 
 
-    fn filter_out_projector_bundle(buffer: &mut Vec<u8>){
-        
-        let len  = buffer.len();
-        let signature = u32::from_le_bytes(buffer[len-8..len-4].try_into().expect("4 bytes make a u32"));
-        println!("len {:?}", len);
-        
-        if signature == 0xFA123456 { 
-            println!("good flag  {:?}", signature);
-        }
-        else{
-            println!("bad flag  {:?}", signature);
-            return;
-        }
-        
-    
-        let size32 = u32::from_le_bytes(buffer[len-4..len].try_into().expect("4 bytes make a u32"));
-        let swf_size = usize::try_from(size32).expect("a u64 should hold a u32");
-    
-        if swf_size > len -8{
-            println!("bad swf size found {:?}", swf_size);
-            return;
-        }
-    
-    
-        println!("swf size {:?}", swf_size);
-        let offset = len - swf_size - 8;
-        println!("offset{:?}", offset);
-    
-    
-        let mut i = 0;
-    
-        while i < swf_size {
-            buffer[i] = buffer[i+offset];
-            i = i + 1;
-        }
-    
-        buffer.resize(swf_size, 0);
-    }
-
 
     /// Construct a future for the root movie loader.
     fn root_movie_loader(
@@ -973,11 +934,6 @@ impl<'gc> Loader<'gc> {
             tracing::info!("danx root_movie_loader body.len {}", body.len());
 
 
-            println!("danx pre len {:?}", body.len());
-            tracing::info!("danx pre len \"{}\"", body.len());
-            Self::filter_out_projector_bundle(&mut body);
-            tracing::info!("danx post len \"{}\"", body.len());
-            println!("danx post len {:?}", body.len());
             
 
             // The spoofed root movie URL takes precedence over the actual URL.
